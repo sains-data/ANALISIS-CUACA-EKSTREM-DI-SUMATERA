@@ -1,0 +1,18 @@
+#!/bin/bash
+# Path untuk data raw
+RAW_DIR="/opt/airflow/dags/data/raw/"
+HDFS_DIR="/data/raw/"
+
+# Loop untuk memeriksa dan memindahkan file baru
+for file in $RAW_DIR*.csv; do
+  filename=$(basename "$file")
+  
+  # Periksa jika file belum ada di HDFS
+  hadoop fs -test -e "$HDFS_DIR$filename"
+  if [ $? -ne 0 ]; then
+    echo "Uploading new file: $filename"
+    hadoop fs -put "$file" "$HDFS_DIR"
+  else
+    echo "File $filename already exists, skipping."
+  fi
+done
