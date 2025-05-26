@@ -1,4 +1,4 @@
-# Project Big Data Pipeline
+# Prediksi Curah Hujan Menggunakan Random Forest pada Ekosistem Hadoop di bandar lampung
 
 Project ini merupakan implementasi pipeline data untuk memproses data cuaca menggunakan berbagai teknologi big data seperti Hadoop, Spark, Hive, Airflow, dan Superset.
 
