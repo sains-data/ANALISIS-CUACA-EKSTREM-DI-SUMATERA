@@ -630,6 +630,9 @@ The system is now ready for production use, providing valuable insights into wea
 
 ---
 
-**🎉 Happy Big Data Processing!**
-
+**OUR TEAM**
+- Kemas Veriandra Ramadhan (122450016)
+- Haikal Dwi Syaputra (12245006)
+- Chalifia Wananda (122450076)
+- Dwi Sulistiani (121450079)
 For questions, issues, or contributions, please create a GitHub issue or contact the project maintainers.
