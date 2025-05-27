@@ -1,0 +1,45 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# VS Code
+.vscode/
+
+# Docker volumes and logs
+logs/
+data/volumes/
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.cache
+
+# Large data files (keep structure but ignore content)
+data/bronze/*.xlsx
+data/silver/*.csv
+data/gold/*.csv
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Superset cache
+config/superset/__pycache__/

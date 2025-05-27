@@ -8,7 +8,7 @@ import os
 # Add project directory to Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from convert_excel import convert_and_clean_excel
+from scripts.spark_weather_processing import process_excel_files
 
 # Define default arguments
 default_args = {
@@ -54,29 +54,24 @@ def sync_local_bronze_to_hdfs(**context):
         print(f"Error syncing bronze layer: {str(e)}")
         raise
 
-def convert_bronze_to_silver(**context):
-    """Convert Excel files from HDFS bronze to local silver with data cleaning"""
-    hdfs_bronze_path = '/data/bronze'
-    local_silver_path = '/data/silver'
-    successful, failed = convert_and_clean_excel(hdfs_bronze_path, local_silver_path)
-    if failed > 0:
-        raise Exception(f"Failed to convert {failed} files")
-    return f"Successfully converted {successful} files"
-
-def sync_silver_to_hdfs(**context):
-    """Sync local silver layer to HDFS silver layer"""
-    import subprocess
-    try:
-        cmd = """docker exec namenode bash -c '
-            hdfs dfs -put -f /data/silver/* /data/silver/ &&
-            echo "Silver layer synced to HDFS successfully"'"""
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-        if result.returncode != 0:
-            raise Exception(f"Failed to sync silver layer: {result.stderr}")
-        return "Silver layer synced successfully"
-    except Exception as e:
-        print(f"Error syncing silver layer: {str(e)}")
-        raise
+def process_with_spark(**context):
+    """Process Excel files from HDFS bronze to silver using Spark"""
+    from pyspark.sql import SparkSession
+    
+    # Create Spark session
+    spark = SparkSession.builder \
+        .appName("WeatherDataProcessing") \
+        .config("spark.hadoop.fs.defaultFS", "hdfs://namenode:8020") \
+        .getOrCreate()
+    
+    # Process files
+    bronze_path = "/data/bronze"
+    silver_path = "/data/silver"
+    success = process_excel_files(spark, bronze_path, silver_path)
+    
+    if not success:
+        raise Exception("Failed to process Excel files with Spark")
+    return "Successfully processed files with Spark"
 
 # Define DAG
 dag = DAG(
@@ -101,19 +96,12 @@ sync_bronze = PythonOperator(
     dag=dag
 )
 
-# Task 3: Convert bronze HDFS to silver local (Excel to CSV with cleaning)
-convert_to_silver = PythonOperator(
-    task_id='convert_bronze_to_silver',
-    python_callable=convert_bronze_to_silver,
-    dag=dag
-)
-
-# Task 4: Sync silver local to HDFS silver
-sync_silver = PythonOperator(
-    task_id='sync_silver_to_hdfs',
-    python_callable=sync_silver_to_hdfs,
+# Task 3: Process data with Spark
+process_data = PythonOperator(
+    task_id='process_with_spark',
+    python_callable=process_with_spark,
     dag=dag
 )
 
 # Set task dependencies
-create_hdfs_dirs >> sync_bronze >> convert_to_silver >> sync_silver
+create_hdfs_dirs >> sync_bronze >> process_data
